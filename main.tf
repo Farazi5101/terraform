@@ -160,7 +160,7 @@ resource "aws_wafv2_web_acl_logging_configuration" "example" {
   resource_arn            = aws_wafv2_web_acl.example.arn
   redacted_fields {
     single_header {
-      name = "authorization"
+      name = "randomvalue"
     }
   }
 }
