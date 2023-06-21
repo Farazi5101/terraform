@@ -1,22 +1,39 @@
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+terraform {
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "5.4.0"
+    }
   }
+}
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+provider "aws" {
+  region = "us-east-1"
+  access_key = "AKIA4VIPZL3PS7MQGP4K"
+  secret_key = "+mjOTAfvzvoE8f4gPPk775+WWEX856hne4UEDC2W"
+}
+
+resource "aws_placement_group" "test" {
+  name     = "test"
+  strategy = "cluster"
+}
+
+
+resource "aws_ami" "example" {
+  name                = "terraform-example"
+  virtualization_type = "hvm"
+  root_device_name    = "/dev/xvda"
+  imds_support        = "v2.0" # Enforce usage of IMDSv2. You can safely remove this line if your application explicitly doesn't support it.
+  ebs_block_device {
+    device_name = "/dev/xvda"
+    snapshot_id = "snap-xxxxxxxx"
+    volume_size = 8
   }
-
-  owners = ["099720109477"] # Canonical
 }
 
 resource "aws_launch_configuration" "as_conf" {
   name_prefix   = "terraform-lc-example-"
-  image_id      = data.aws_ami.ubuntu.id
+  image_id      = resource.aws_ami.example.id
   instance_type = "t2.micro"
   associate_public_ip_address = true
   lifecycle {
@@ -34,3 +51,4 @@ resource "aws_autoscaling_group" "bar" {
     create_before_destroy = true
   }
 }
+
